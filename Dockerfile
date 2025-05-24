@@ -6,7 +6,7 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # Giai đoạn chạy
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 # Copy WAR file từ giai đoạn build
