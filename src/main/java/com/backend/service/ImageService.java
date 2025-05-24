@@ -3,7 +3,6 @@ package com.backend.service;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.firebase.cloud.StorageClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,19 +14,18 @@ import java.util.UUID;
 
 @Service
 public class ImageService {
+
     @Value("${firebase.storage.bucket}")
     private String bucketName;
-
-    private final Bucket storageBucket;
-
-    @Autowired
-    public ImageService(StorageClient storageClient) {
-        this.storageBucket = storageClient.bucket();
-    }
 
     public String uploadImage(MultipartFile file, String folder) throws IOException {
         if (file == null || file.isEmpty()) {
             return null;
+        }
+
+        Bucket storageBucket = StorageClient.getInstance().bucket();  // 🔥 moved here
+        if (storageBucket == null) {
+            throw new IllegalStateException("Firebase storage bucket is null. Check Firebase initialization.");
         }
 
         String fileName = folder + "/" + UUID.randomUUID() + "-" + file.getOriginalFilename();
@@ -42,6 +40,7 @@ public class ImageService {
         if (imageUrl != null && !imageUrl.isEmpty()) {
             String imagePath = extractImagePathFromUrl(imageUrl);
             if (imagePath != null) {
+                Bucket storageBucket = StorageClient.getInstance().bucket();  // 🔥 moved here
                 Blob blob = storageBucket.get(imagePath);
                 if (blob != null) {
                     blob.delete();
